@@ -1,10 +1,15 @@
 function renderTaskChart() {
-  const tasksObj = JSON.parse(localStorage.getItem("tasks") || "{}");
-  const allTasks = Object.values(tasksObj).flat();
+  const allTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+
   let completed = 0, pending = 0;
   allTasks.forEach(t => t.done ? completed++ : pending++);
-  const ctx = document.getElementById('tasksChart').getContext('2d');
+
+  const canvas = document.getElementById('tasksChart');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
   if (window.tasksChartObj) window.tasksChartObj.destroy();
+
   window.tasksChartObj = new Chart(ctx, {
     type: 'doughnut',
     data: {
@@ -24,10 +29,13 @@ function renderTaskChart() {
       }
     }
   });
-  // 👇 Display status on the right
+
   const statusBox = document.getElementById("taskStatus");
+  if (!statusBox) return;
+
   const total = completed + pending;
   const percent = total ? Math.round((completed / total) * 100) : 0;
+
   statusBox.innerHTML = `
     🟢 Completed: <span style="color: #4caf50; font-weight: bold;">${completed}</span><br>
     🔴 Pending: <span style="color: #f44336; font-weight: bold;">${pending}</span><br><br>

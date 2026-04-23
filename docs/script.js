@@ -1,4 +1,97 @@
 document.addEventListener("DOMContentLoaded", () => {
+  async function loadUserData(token) {
+    try {
+      const res = await fetch("https://clario-dataengineering.onrender.com/api/users/me", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      // save data locally
+      localStorage.setItem("events", JSON.stringify(data.events || []));
+      localStorage.setItem("tasks", JSON.stringify(data.tasks || []));
+      localStorage.setItem("moodLog", JSON.stringify(data.moodLog || []));
+      localStorage.setItem("stickyNote", data.stickyNote || "");
+      localStorage.setItem("profilePic", data.profilePic || "");
+      localStorage.setItem("sidebarName", data.sidebarName || "");
+
+      if (data.settings) {
+        localStorage.setItem("timeFormat", data.settings.timeFormat);
+        localStorage.setItem("reminderValue", data.settings.reminderValue);
+        localStorage.setItem("reminderUnit", data.settings.reminderUnit);
+        localStorage.setItem("reminderSound", data.settings.reminderSound);
+        localStorage.setItem("locationCountry", data.settings.locationCountry);
+        localStorage.setItem("locationState", data.settings.locationState);
+        localStorage.setItem("locationCity", data.settings.locationCity);
+        localStorage.setItem("selectedTheme", data.settings.selectedTheme);
+        localStorage.setItem("selectedSection", data.settings.selectedSection);
+        localStorage.setItem("selectedCategory", data.settings.selectedCategory);
+      }
+
+      //refresh UI
+      renderCalendar();
+      renderTasks();
+      renderMiniCalendar();
+      renderEventChart();
+      renderTaskChart();
+      renderMoodChart();
+      renderMoodEventChart();
+      renderMoodTaskChart();
+
+    } catch (err) {
+      console.error("Load user data error:", err);
+    }
+  }
+
+  async function addTaskToDB(task) {
+    const token = localStorage.getItem("token");
+    const res = await fetch("https://clario-dataengineering.onrender.com/api/users/tasks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(task)
+    });
+    const data = await res.json();
+    localStorage.setItem("tasks", JSON.stringify(data));
+    renderTasks();
+  }
+
+  async function updateTask(id, updatedTask) {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`https://clario-dataengineering.onrender.com/api/users/tasks/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(updatedTask)
+    });
+    const data = await res.json();
+    localStorage.setItem("tasks", JSON.stringify(data));
+    renderTasks();
+  }
+
+  async function deleteTask(id) {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`https://clario-dataengineering.onrender.com/api/users/tasks/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const data = await res.json();
+    localStorage.setItem("tasks", JSON.stringify(data));
+    renderTasks();
+  }
+
+  const existingToken = localStorage.getItem("token");
+  if (existingToken) {
+    loadUserData(existingToken);
+  }
   const loginModal = document.getElementById("loginModal");
   const openLoginBtn = document.getElementById("openLoginBtn");
   const closeLoginModal = document.getElementById("closeLoginModal");
@@ -37,6 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("token", data.token);
         localStorage.setItem("userName", data.name);
         localStorage.setItem("userEmail", data.email);
+
+        await loadUserData(data.token);
       }
     } catch (error) {
       console.error(error);
@@ -63,6 +158,8 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("token", data.token);
         localStorage.setItem("userName", data.name);
         localStorage.setItem("userEmail", data.email);
+
+        await loadUserData(data.token);
       }
     } catch (error) {
       console.error(error);
@@ -199,9 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function openDayEventsModal(date) {
     const events = JSON.parse(localStorage.getItem("events") || "[]");
-    const dayEvents = events
-    .map((e, index) => ({ ...e, index }))
-    .filter((e) => e.date === date);
+    const dayEvents = events.filter((e) => e.date === date);
     const modal = document.createElement("div");
     modal.className = "modal";
     modal.id = "dayEventsModal";
@@ -230,14 +325,15 @@ document.addEventListener("DOMContentLoaded", () => {
         title.style.cursor = "pointer";
         title.style.textDecoration = "underline";
         title.addEventListener("click", () => {
-          eventIndexInput.value = e.index;
+          eventIndexInput.value = e._id;
           eventTitle.value = e.title;
           eventDesc.value = e.desc;
           eventDate.value = e.date;
+          eventTime.value = e.time || "";
           eventCategory.value = e.category;
           deleteEvent.style.display = "inline-block";
-          modal.remove(); // close day modal
-          eventModal.classList.remove("hidden"); // open edit modal
+          modal.remove();
+          eventModal.classList.remove("hidden");
         });
         const del = document.createElement("button");
         del.textContent = "🗑️";
@@ -257,14 +353,29 @@ document.addEventListener("DOMContentLoaded", () => {
           cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
           // Show modal
           modal.classList.remove("hidden");
+
           // Handle delete
-          newConfirm.addEventListener("click", () => {
-            const updated = events.filter((_, i) => i !== e.index);
-            localStorage.setItem("events", JSON.stringify(updated));
-            modal.classList.add("hidden");
-            document.getElementById("dayEventsModal").remove();
-            renderCalendar();
-            renderEventChart();
+          newConfirm.addEventListener("click", async () => {
+            const token = localStorage.getItem("token");
+            try {
+              const response = await fetch(`https://clario-dataengineering.onrender.com/api/users/events/${e._id}`, {
+                method: "DELETE",
+                headers: {Authorization: `Bearer ${token}`}
+              });
+              const updatedEvents = await response.json();
+              if (!response.ok) {
+                alert(updatedEvents.message || "Failed to delete event");
+                return;
+              }
+              localStorage.setItem("events", JSON.stringify(updatedEvents));
+              modal.classList.add("hidden");
+              document.getElementById("dayEventsModal").remove();
+              renderCalendar();
+              renderEventChart();
+            } catch (error) {
+              console.error("Delete event error:", error);
+              alert("Server error while deleting event.");
+            }
           });
           newCancel.addEventListener("click", () => {
             modal.classList.add("hidden");
@@ -346,8 +457,12 @@ document.addEventListener("DOMContentLoaded", () => {
   closeModal.addEventListener("click", () => {
     eventModal.classList.add("hidden");
   });
-  saveEvent.addEventListener("click", () => {
-    const events = JSON.parse(localStorage.getItem("events") || "[]");
+  saveEvent.addEventListener("click", async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please login first.");
+      return;
+    }
     const newEvent = {
       title: eventTitle.value.trim(),
       desc: eventDesc.value.trim(),
@@ -356,17 +471,37 @@ document.addEventListener("DOMContentLoaded", () => {
       category: eventCategory.value,
       notified: false
     };
-    const index = eventIndexInput.value;
-    if (index !== "") {
-      events[index] = newEvent;
-    } else {
-      events.push(newEvent);
+    const eventId = eventIndexInput.value;
+    const isEdit = !!eventId;
+    try {
+      const response = await fetch(
+        isEdit
+          ? `https://clario-dataengineering.onrender.com/api/users/events/${eventId}`
+          : `https://clario-dataengineering.onrender.com/api/users/events`,
+        {
+          method: isEdit ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(newEvent)
+        }
+      );
+      const updatedEvents = await response.json();
+      if (!response.ok) {
+        alert(updatedEvents.message || "Failed to save event");
+        return;
+      }
+
+      localStorage.setItem("events", JSON.stringify(updatedEvents));
+      eventModal.classList.add("hidden");
+      showSaveNotification(isEdit ? "Updated!" : "Saved!");
+      renderCalendar();
+      renderEventChart();
+    } catch (error) {
+      console.error("Save event error:", error);
+      alert("Server error while saving event.");
     }
-    localStorage.setItem("events", JSON.stringify(events));
-    eventModal.classList.add("hidden");
-    showSaveNotification("Saved!");
-    renderCalendar();
-    renderEventChart();
   });
   deleteEvent.addEventListener("click", () => {
     const modal = document.getElementById("deleteConfirmModal");
@@ -380,15 +515,29 @@ document.addEventListener("DOMContentLoaded", () => {
     confirmBtn.parentNode.replaceChild(newConfirm, confirmBtn);
     cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
     modal.classList.remove("hidden");
-    newConfirm.addEventListener("click", () => {
-      const index = parseInt(eventIndexInput.value);
-      if (!isNaN(index)) {
-        const events = JSON.parse(localStorage.getItem("events") || "[]");
-        events.splice(index, 1);
-        localStorage.setItem("events", JSON.stringify(events));
+    newConfirm.addEventListener("click", async () => {
+      const token = localStorage.getItem("token");
+      const eventId = eventIndexInput.value;
+      if (!eventId) return;
+      try {
+        const response = await fetch(`https://clario-dataengineering.onrender.com/api/users/events/${eventId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const updatedEvents = await response.json();
+        if (!response.ok) {
+          alert(updatedEvents.message || "Failed to delete event");
+          return;
+        }
+        localStorage.setItem("events", JSON.stringify(updatedEvents));
         eventModal.classList.add("hidden");
         renderCalendar();
         renderEventChart();
+      } catch (error) {
+        console.error("Delete event error:", error);
+        alert("Server error while deleting event.");
       }
       modal.classList.add("hidden");
     });
@@ -527,92 +676,60 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedTaskDate = new Date().toISOString().split("T")[0]; // Default to today
   function renderTasks() {
     const filter = document.getElementById("taskFilter").value;
-    const allTasks = JSON.parse(localStorage.getItem("tasks") || "{}");
+    const allTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
     taskList.innerHTML = "";
     if (filter === "all") {
-      const allDates = Object.keys(allTasks).sort((a, b) => new Date(b) - new Date(a));
-      allDates.forEach(date => {
-        const tasks = allTasks[date];
-        tasks.forEach((task, index) => {
-          const li = document.createElement("li");
-          li.dataset.index = index;
-          li.draggable = true;
-          // Checkbox
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.checked = task.done;
-          checkbox.addEventListener("change", () => {
-            task.done = checkbox.checked;
-            allTasks[date][index] = task;
-            localStorage.setItem("tasks", JSON.stringify(allTasks));
-            renderTasks();
-            renderTaskChart();
-            renderMoodTaskChart();
-          });
-          // Task Text
-          const span = document.createElement("span");
-          span.textContent = `${task.text} — 📅 ${date}`;
-          // Delete Button
-          const delBtn = document.createElement("button");
-          delBtn.textContent = "🗑️";
-          delBtn.style.marginLeft = "10px";
-          delBtn.addEventListener("click", () => {
-            tasks.splice(index, 1);
-            allTasks[date] = tasks;
-            localStorage.setItem("tasks", JSON.stringify(allTasks));
-            renderTasks();
-            renderTaskChart();
-          });
-          li.appendChild(checkbox);
-          li.appendChild(span);
-          li.appendChild(delBtn);
-          // Drag and drop
-          li.addEventListener("dragstart", dragStart);
-          li.addEventListener("dragover", dragOver);
-          li.addEventListener("drop", drop);
-          taskList.appendChild(li);
-        });
-      });
-    } else {
-      const tasks = allTasks[selectedTaskDate] || [];
-      tasks.forEach((task, index) => {
-        if (filter === "done" && !task.done) return;
-        if (filter === "pending" && task.done) return;
+      const sortedTasks = [...allTasks].sort((a, b) => b.date.localeCompare(a.date));
+      sortedTasks.forEach((task) => {
         const li = document.createElement("li");
-        li.dataset.index = index;
-        li.draggable = true;
-        // Checkbox
+        li.dataset.id = task._id;
+        li.draggable = false;
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.checked = task.done;
-        checkbox.addEventListener("change", () => {
-          task.done = checkbox.checked;
-          allTasks[selectedTaskDate][index] = task;
-          localStorage.setItem("tasks", JSON.stringify(allTasks));
-          renderTasks();
-          renderTaskChart();
+        checkbox.addEventListener("change", async () => {
+          await updateTask(task._id, { ...task, done: checkbox.checked });
         });
-        // Task Text
+        const span = document.createElement("span");
+        span.textContent = `${task.text} — 📅 ${task.date}`;
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "🗑️";
+        delBtn.style.marginLeft = "10px";
+        delBtn.addEventListener("click", async () => {
+          await deleteTask(task._id);
+        });
+  
+        li.appendChild(checkbox);
+        li.appendChild(span);
+        li.appendChild(delBtn);
+        taskList.appendChild(li);
+      });
+    } else {
+      const filteredTasks = allTasks.filter(task => task.date === selectedTaskDate);
+      filteredTasks.forEach((task) => {
+        if (filter === "done" && !task.done) return;
+        if (filter === "pending" && task.done) return;
+        const li = document.createElement("li");
+        li.dataset.id = task._id;
+        li.draggable = false;
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.done;
+        checkbox.addEventListener("change", async () => {
+          await updateTask(task._id, { ...task, done: checkbox.checked });
+        });
         const span = document.createElement("span");
         span.textContent = task.text;
-        // Delete Button
         const delBtn = document.createElement("button");
         delBtn.innerHTML = '<i data-feather="trash-2"></i>';
         delBtn.style.marginLeft = "10px";
-        delBtn.addEventListener("click", () => {
-          tasks.splice(index, 1);
-          allTasks[selectedTaskDate] = tasks;
-          localStorage.setItem("tasks", JSON.stringify(allTasks));
-          renderTasks();
-          renderTaskChart();
+        delBtn.addEventListener("click", async () => {
+          await deleteTask(task._id);
         });
         li.appendChild(checkbox);
         li.appendChild(span);
         li.appendChild(delBtn);
-        // Drag and drop
-        li.addEventListener("dragstart", dragStart);
-        li.addEventListener("dragover", dragOver);
-        li.addEventListener("drop", drop);
         taskList.appendChild(li);
       });
     }
@@ -683,19 +800,22 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTasks();
     renderTaskChart();
   }
-  addTaskBtn.addEventListener("click", () => {
-    const task = taskInput.value.trim();
-    if (task) {
-      const allTasks = JSON.parse(localStorage.getItem("tasks") || "{}");
-      if (!allTasks[selectedTaskDate]) {
-        allTasks[selectedTaskDate] = [];
-      }
-      allTasks[selectedTaskDate].push({ text: task, done: false });
-      localStorage.setItem("tasks", JSON.stringify(allTasks));
-      taskInput.value = "";
-      renderTasks();
-      renderTaskChart();
+  addTaskBtn.addEventListener("click", async () => {
+    console.log("ADD TASK CLICKED");
+    const taskText = taskInput.value.trim();
+    console.log("Task text:", taskText);
+    if (!taskText) {
+      console.log("Empty task");
+      return;
     }
+    const newTask = {
+      text: taskText,
+      done: false,
+      date: selectedTaskDate
+    };
+    console.log("Sending task:", newTask);
+    await addTaskToDB(newTask);
+    taskInput.value = "";
   });
   
   const stickyNoteArea = document.getElementById("stickyNoteArea");
@@ -963,7 +1083,7 @@ document.addEventListener("DOMContentLoaded", () => {
       case 'snow': return { emoji: '❄️', text: 'Snowy' };
       case 'mist':
       case 'fog': return { emoji: '🌫️', text: 'Foggy' };
-      default: return { emoji: '🌡️', text: 'Weather' };
+      default: return { emoji: '🌡️', text: '' };
     }
   }
   function fetchWeather({ lat, lon, city } = {}) {

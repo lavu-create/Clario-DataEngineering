@@ -3,101 +3,140 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/userModel');
 const { generateToken } = require('../utils/generateToken');
 
-// @desc: Register a new user
-// @route: POST /api/users/register
-// @access: Public
+// @desc    Register a new user
+// @route   POST /api/users/register
+// @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
+  const { name, email, password } = req.body;
 
-    // Validation
-    if (!name || !email || !password) {
-        res.status(400);
-        throw new Error('Please include all fields');
-    }
+  if (!name || !email || !password) {
+    res.status(400);
+    throw new Error('Please include all fields');
+  }
 
-    // Check if user already exists
-    const isUserExist = await User.findOne({ email });
+  const isUserExist = await User.findOne({ email });
 
-    if (isUserExist) {
-        res.status(400);
-        throw new Error('User already exists');
-    }
+  if (isUserExist) {
+    res.status(400);
+    throw new Error('User already exists');
+  }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
-    const user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
+  const user = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    stickyNote: '',
+    profilePic: '',
+    sidebarName: name,
+    events: [],
+    tasks: [],
+    moodLog: [],
+    settings: {
+      timeFormat: '24',
+      reminderValue: 4,
+      reminderUnit: 'min',
+      reminderSound: 'default',
+      locationCountry: '',
+      locationState: '',
+      locationCity: '',
+      selectedTheme: 'sunburst-theme',
+      selectedSection: 'calendar',
+      selectedCategory: 'all',
+    },
+  });
+
+  if (user) {
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id),
+      dashboard: {
+        stickyNote: user.stickyNote,
+        profilePic: user.profilePic,
+        sidebarName: user.sidebarName,
+        events: user.events,
+        tasks: user.tasks,
+        moodLog: user.moodLog,
+        settings: user.settings,
+      },
     });
-
-    if (user) {
-        res.status(201).json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            token: generateToken(user._id, process.env.JWT_USER_SECRET),
-        });
-    } else {
-        res.status(400);
-        throw new Error('Invalid user data');
-    }
+  } else {
+    res.status(400);
+    throw new Error('Invalid user data');
+  }
 });
 
-// @desc: Login a user
-// @route: POST /api/users/login
-// @access: Public
+// @desc    Login a user
+// @route   POST /api/users/login
+// @access  Public
 const loginUser = asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    // Validation
-    if (!email || !password) {
-        res.status(400);
-        throw new Error('Please enter correct credentials');
-    }
+  if (!email || !password) {
+    res.status(400);
+    throw new Error('Please enter correct credentials');
+  }
 
-    // Find user by email
-    const user = await User.findOne({ email });
+  const user = await User.findOne({ email });
 
-    if (!user) {
-        res.status(401);
-        throw new Error('Invalid credentials');
-    }
+  if (!user) {
+    res.status(401);
+    throw new Error('Invalid credentials');
+  }
 
-    // Compare password
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
-    if (!isPasswordCorrect) {
-        res.status(401);
-        throw new Error('Invalid credentials');
-    }
+  if (!isPasswordCorrect) {
+    res.status(401);
+    throw new Error('Invalid credentials');
+  }
 
-    // Successful login
-    res.status(200).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        token: generateToken(user._id, process.env.JWT_USER_SECRET),
-    });
+  res.status(200).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    token: generateToken(user._id),
+    dashboard: {
+      stickyNote: user.stickyNote,
+      profilePic: user.profilePic,
+      sidebarName: user.sidebarName,
+      events: user.events,
+      tasks: user.tasks,
+      moodLog: user.moodLog,
+      settings: user.settings,
+    },
+  });
 });
 
-// @desc: Get current user
-// @route: GET /api/users/me
-// @access: Private
+// @desc    Get current user with full dashboard data
+// @route   GET /api/users/me
+// @access  Private
 const getMeUser = asyncHandler(async (req, res) => {
-    const currUser = req.user;
+  const currUser = await User.findById(req.user._id).select('-password');
 
-    const formattedUser = {
-        id: currUser._id,
-        name: currUser.name,
-        email: currUser.email,
-        isAdmin: currUser.isAdmin,
-    };
+  if (!currUser) {
+    res.status(404);
+    throw new Error('User not found');
+  }
 
-    res.status(200).json(formattedUser);
+  res.status(200).json({
+    _id: currUser._id,
+    name: currUser.name,
+    email: currUser.email,
+    stickyNote: currUser.stickyNote,
+    profilePic: currUser.profilePic,
+    sidebarName: currUser.sidebarName,
+    events: currUser.events,
+    tasks: currUser.tasks,
+    moodLog: currUser.moodLog,
+    settings: currUser.settings,
+    createdAt: currUser.createdAt,
+    updatedAt: currUser.updatedAt,
+  });
 });
 
 module.exports = { registerUser, loginUser, getMeUser };

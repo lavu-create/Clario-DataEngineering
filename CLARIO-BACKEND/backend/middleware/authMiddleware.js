@@ -10,30 +10,31 @@ const protect = asyncHandler(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     try {
-      // Get token from header
+      // Extract token
       token = req.headers.authorization.split(' ')[1]
+
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET)
-      // Get user from token
+
+      // Attach FULL user (we will need all fields now)
       req.user = await User.findById(decoded.id).select('-password')
-      // NOTE: We need to check if a user was found
-      // https://www.udemy.com/course/react-front-to-back-2022/learn/lecture/30591026#questions/17843570
+
       if (!req.user) {
         res.status(401)
-        throw new Error('Not authorized')
+        throw new Error('User not found')
       }
 
       next()
     } catch (error) {
-      console.log(error)
+      console.log('Auth Error:', error.message)
       res.status(401)
-      throw new Error('Not authorized')
+      throw new Error('Not authorized, token failed')
     }
   }
 
   if (!token) {
     res.status(401)
-    throw new Error('Not authorized')
+    throw new Error('Not authorized, no token')
   }
 })
 
