@@ -47,6 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function addTaskToDB(task) {
     const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please login first.");
+      return;
+    }
     const res = await fetch("https://clario-dataengineering.onrender.com/api/users/tasks", {
       method: "POST",
       headers: {
@@ -56,6 +60,15 @@ document.addEventListener("DOMContentLoaded", () => {
       body: JSON.stringify(task)
     });
     const data = await res.json();
+    if (!res.ok) {
+      console.error("Add task failed:", data);
+      alert(data.message || "Failed to add task");
+      return;
+    }
+    if (!Array.isArray(data)) {
+      console.error("Expected task array, got:", data);
+      return;
+    }
     localStorage.setItem("tasks", JSON.stringify(data));
     renderTasks();
   }
@@ -731,6 +744,8 @@ document.addEventListener("DOMContentLoaded", () => {
         li.appendChild(span);
         li.appendChild(delBtn);
         taskList.appendChild(li);
+
+        feather.replace();
       });
     }
   }

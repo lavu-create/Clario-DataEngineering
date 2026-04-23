@@ -47,27 +47,42 @@ router.delete('/events/:id', protect, async (req, res) => {
 
 // TASKS
 router.get('/tasks', protect, async (req, res) => {
-  res.json(req.user.tasks);
+  const user = await req.user.constructor.findById(req.user._id);
+  res.json(user.tasks);
 });
 
 router.post('/tasks', protect, async (req, res) => {
-  const user = req.user;
+  const user = await req.user.constructor.findById(req.user._id);
+
   user.tasks.push(req.body);
   await user.save();
+
   res.json(user.tasks);
 });
 
 router.put('/tasks/:id', protect, async (req, res) => {
-  const user = req.user;
+  const user = await req.user.constructor.findById(req.user._id);
+
   const task = user.tasks.id(req.params.id);
-  Object.assign(task, req.body);
+  if (!task) {
+    return res.status(404).json({ message: 'Task not found' });
+  }
+
+  task.text = req.body.text ?? task.text;
+  task.done = req.body.done ?? task.done;
+  task.date = req.body.date ?? task.date;
+
   await user.save();
   res.json(user.tasks);
 });
 
 router.delete('/tasks/:id', protect, async (req, res) => {
-  const user = req.user;
-  user.tasks.id(req.params.id).remove();
+  const user = await req.user.constructor.findById(req.user._id);
+
+  user.tasks = user.tasks.filter(
+    (task) => task._id.toString() !== req.params.id
+  );
+
   await user.save();
   res.json(user.tasks);
 });
