@@ -1,4 +1,4 @@
-# 🌤️ Clario: AI-Driven Mood-Aware Productivity Calendar
+# 🌤️ Clario – Productivity Management System using MongoDB
 <table>
   <tr>
     <td>
@@ -6,9 +6,8 @@
     </td>
     <td style="padding-left:15px; vertical-align:top;">
       <img src="FRONTEND/assets/website%20logo.jpg" alt="Clario Website Logo" width="100"><br>
-      Personal Dashboard for Tasks, Mood Tracking & Productivity Analytics<br>
-      ⚡️ Built for WCHL Hackathon 2025 – Enhancing Productivity & Well-being for Everyone<br>
-      👩‍💻 By Team Clario: Lavanya · Nitesh
+      Full-Stack Productivity Dashboard with MongoDB Database Connectivity for managing tasks, events, and user data<br>
+      👩‍💻 By Lavanya
     </td>
   </tr>
 </table>
@@ -73,11 +72,35 @@ Check out Clario in action:
 | Frontend           | HTML, CSS, JavaScript                              | Responsive layout, various themes       |
 | Backend            | Node.js, Express.js                                | REST APIs, JWT protected routes         |
 | Authentication     | JWT, bcrypt                                        | Password hashing and session management |
-| Database           | MongoDB (primary) / JSON + LocalStorage (fallback) | Tasks, events, moods                    |
+| Database           | MongoDB Atlas (Primary Database using Mongoose)    | User data, tasks, events, notes, and productivity logs|
 | Charts & Analytics | Chart.js                                           | Visualizing moods, tasks, events        |
 | Notifications      | Web Audio API                                      | Online notification sounds              |
 | Weather            | OpenWeatherMap API                                 | Auto/manual location updates            |
 | Deployment         | GitHub Pages(frontend) + Render(backend)           | Fully hosted, live updates              |
+
+---
+
+## 🔌 Database Connectivity
+This project uses MongoDB Atlas as a cloud database.
+- Connected using Mongoose in Node.js backend
+- Connection string stored securely in .env file
+- Backend establishes connection on server start
+
+This ensures proper database connectivity by enabling real-time data storage and retrieval through backend APIs.
+
+### Testing
+APIs were tested using tools like curl/Postman to verify successful data insertion and retrieval from MongoDB.
+
+---
+
+## Data Flow: 
+Frontend → Backend (Express API) → MongoDB Atlas
+
+## Supported Operations:
+- Create (Register user, add tasks/events)
+- Read (Fetch user data, tasks, notes)
+- Update (Modify tasks/events)
+- Delete (Remove entries)
 
 ---
 
@@ -93,12 +116,12 @@ cd CLARIO/FRONTEND
 
 ### 🔧 Backend
 ```bash
-cd CLARIO/CLARIO-BACKEND/backend
-npm install          # Install dependencies
-node app.js          # Start backend server
+cd CLARIO-BACKEND
+npm install                 # Install dependencies
+node backend/server.js      # Start backend server
 ```
 
-Backend runs at: `http://localhost:3000`
+Backend runs at: `http://localhost:5050`
 
 ---
 
@@ -143,19 +166,10 @@ Clario/
 
 ---
 
-## 🧑‍💻 Team Clario
-
-| Name    | Role                           | Contribution                                   |
-|---------|--------------------------------|------------------------------------------------|
-| Lavanya | Frontend & Data Viz Lead, LEAD | UI, live clock, reminders, weather & analytics |
-| Nitesh  | Backend & Database             | REST APIs, data persistence & JWT auth         |
-
----
-
 ## 🌱 Git Workflow
 
 ```bash
-git clone https://github.com/your-username/clario.git  
+git clone https://github.com/lavu-create/Clario-DataEngineering.git  
 cd clario  
 git checkout -b feature/your-feature-name  
 # Make changes  
