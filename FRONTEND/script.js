@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const email = document.getElementById("loginEmail").value;
     const password = document.getElementById("loginPassword").value;
     try {
-      const response = await fetch("https://clario-8rvp.onrender.com/api/users/login", {
+      const response = await fetch("https://clario-dataengineering.onrender.com/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const email = document.getElementById("signupEmail").value;
     const password = document.getElementById("signupPassword").value;
     try {
-      const response = await fetch("https://clario-8rvp.onrender.com/api/users/register", {
+      const response = await fetch("https://clario-dataengineering.onrender.com/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
