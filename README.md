@@ -49,9 +49,9 @@ Clario solves this by offering a sleek, responsive, all-in-one dashboard that he
 Check out Clario in action:
 
 - [**Frontend (Live):**](https://lavu-create.github.io/Clario/FRONTEND/)  
-- [**Backend (API):**](https://clario-8rvp.onrender.com)  
+- [**Backend (API):**](https://clario-dataengineering.onrender.com/)
 
-> Note: Some features (like notifications or data export) may require backend APIs to be running.
+> This deployed backend is connected to MongoDB Atlas and reflects the latest database-integrated version of the project.
 
 ---
 
