@@ -2,10 +2,10 @@
 <table>
   <tr>
     <td>
-      <img src="FRONTEND/assets/App%20logo.jpg" alt="Clario App Logo" width="140">
+      <img src="docs/assets/App%20logo.jpg" alt="Clario App Logo" width="140">
     </td>
     <td style="padding-left:15px; vertical-align:top;">
-      <img src="FRONTEND/assets/website%20logo.jpg" alt="Clario Website Logo" width="100"><br>
+      <img src="docs/assets/website%20logo.jpg" alt="Clario Website Logo" width="100"><br>
       Full-Stack Productivity Dashboard with MongoDB Database Connectivity for managing tasks, events, and user data<br>
       👩‍💻 By Lavanya
     </td>
@@ -108,7 +108,7 @@ Frontend → Backend (Express API) → MongoDB Atlas
 
 ### 🖥️ Frontend
 ```bash
-cd CLARIO/FRONTEND
+cd CLARIO/docs
 # Open index.html directly in your browser OR
 # Start a local HTTP server for full JS features (optional):
 # python -m http.server 5500
@@ -158,7 +158,7 @@ Clario/
 │       ├── routes/
 │       └── utils/
 ├── DATA-VIZUALIZATION/    → Mood & task analytics (Charts)
-├── FRONTEND/              → Complete UI (HTML, CSS, JS)
+├── docs/              → Complete UI (HTML, CSS, JS)
 │   └── assets/            → Icons, sounds, images (used in frontend)  
 └── README.md              → Project overview and documentation
 
