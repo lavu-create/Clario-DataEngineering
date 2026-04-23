@@ -914,7 +914,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const { title, desc, category, date } = event;
       if (
         title.toLowerCase().includes(query) ||
-        desc.toLowerCase().includes(query) ||
+        (desc && desc.toLowerCase().includes(query)) ||
         category.toLowerCase().includes(query) ||
         date.includes(query)
       ) {
