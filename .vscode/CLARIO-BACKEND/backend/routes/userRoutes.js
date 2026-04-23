@@ -20,27 +20,45 @@ router.get('/me', protect, getMeUser);
 
 // EVENTS
 router.get('/events', protect, async (req, res) => {
-  res.json(req.user.events);
+  const user = await req.user.constructor.findById(req.user._id);
+  res.json(user.events);
 });
 
 router.post('/events', protect, async (req, res) => {
-  const user = req.user;
+  const user = await req.user.constructor.findById(req.user._id);
+
   user.events.push(req.body);
   await user.save();
+
   res.json(user.events);
 });
 
 router.put('/events/:id', protect, async (req, res) => {
-  const user = req.user;
+  const user = await req.user.constructor.findById(req.user._id);
+
   const event = user.events.id(req.params.id);
-  Object.assign(event, req.body);
+  if (!event) {
+    return res.status(404).json({ message: 'Event not found' });
+  }
+
+  event.title = req.body.title ?? event.title;
+  event.desc = req.body.desc ?? event.desc;
+  event.date = req.body.date ?? event.date;
+  event.time = req.body.time ?? event.time;
+  event.category = req.body.category ?? event.category;
+  event.notified = req.body.notified ?? event.notified;
+
   await user.save();
   res.json(user.events);
 });
 
 router.delete('/events/:id', protect, async (req, res) => {
-  const user = req.user;
-  user.events.id(req.params.id).remove();
+  const user = await req.user.constructor.findById(req.user._id);
+
+  user.events = user.events.filter(
+    (event) => event._id.toString() !== req.params.id
+  );
+
   await user.save();
   res.json(user.events);
 });

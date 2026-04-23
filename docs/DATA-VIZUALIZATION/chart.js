@@ -200,8 +200,8 @@ function renderMoodEventChart() {
 
 
 function renderMoodTaskChart() {
-  const moodLog = JSON.parse(localStorage.getItem("moodLog")) || [];
-  const tasksByDate = JSON.parse(localStorage.getItem("tasks")) || {};
+  const moodLog = JSON.parse(localStorage.getItem("moodLog") || "[]");
+  const tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
 
   const moodCountByDate = {};
   const completedTasksByDate = {};
@@ -209,28 +209,31 @@ function renderMoodTaskChart() {
   // Count moods per date
   for (const entry of moodLog) {
     if (entry.date) {
-      const date = entry.date.slice(0, 10); // extract YYYY-MM-DD
+      const date = entry.date.slice(0, 10);
       moodCountByDate[date] = (moodCountByDate[date] || 0) + 1;
     }
   }
 
   // Count completed tasks per date
-  for (const date in tasksByDate) {
-    const tasks = tasksByDate[date];
-    const completed = tasks.filter(t => t.done).length;
-    completedTasksByDate[date] = completed;
-  }
+  tasks.forEach((task) => {
+    if (task.date && task.done) {
+      completedTasksByDate[task.date] = (completedTasksByDate[task.date] || 0) + 1;
+    }
+  });
 
-  // Combine unique dates
-  const allDates = new Set([...Object.keys(moodCountByDate), ...Object.keys(completedTasksByDate)]);
-  const sortedDates = [...allDates].sort();
+  const allDates = [...new Set([
+    ...Object.keys(moodCountByDate),
+    ...Object.keys(completedTasksByDate)
+  ])].sort();
 
-  const moodData = sortedDates.map(date => moodCountByDate[date] || 0);
-  const taskData = sortedDates.map(date => completedTasksByDate[date] || 0);
+  const moodData = allDates.map(date => moodCountByDate[date] || 0);
+  const taskData = allDates.map(date => completedTasksByDate[date] || 0);
 
-  const ctx = document.getElementById("moodTaskChart").getContext("2d");
+  const canvas = document.getElementById("moodTaskChart");
+  if (!canvas) return;
 
-  // Destroy previous chart if any
+  const ctx = canvas.getContext("2d");
+
   if (window.moodTaskChartInstance) {
     window.moodTaskChartInstance.destroy();
   }
@@ -238,7 +241,7 @@ function renderMoodTaskChart() {
   window.moodTaskChartInstance = new Chart(ctx, {
     type: "bar",
     data: {
-      labels: sortedDates,
+      labels: allDates,
       datasets: [
         {
           label: "Mood Logs",
@@ -262,7 +265,7 @@ function renderMoodTaskChart() {
       },
       scales: {
         x: {
-          stacked: true,
+          stacked: false,
         },
         y: {
           beginAtZero: true,

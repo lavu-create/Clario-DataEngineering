@@ -90,6 +90,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function deleteTask(id) {
     const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please login first.");
+      return;
+    }
     const res = await fetch(`https://clario-dataengineering.onrender.com/api/users/tasks/${id}`, {
       method: "DELETE",
       headers: {
@@ -97,8 +101,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     const data = await res.json();
+    if (!res.ok) {
+      console.error("Delete task failed:", data);
+      alert(data.message || "Failed to delete task");
+      return;
+    }
+    if (!Array.isArray(data)) {
+      console.error("Expected updated task array, got:", data);
+      return;
+    }
     localStorage.setItem("tasks", JSON.stringify(data));
     renderTasks();
+    renderTaskChart();
+    renderMoodTaskChart();
   }
 
   const existingToken = localStorage.getItem("token");
@@ -112,6 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signupForm");
   const showLogin = document.getElementById("switchToLogin");
   const showSignup = document.getElementById("switchToSignup");
+
   // Open / close modal
   openLoginBtn.addEventListener("click", () => loginModal.classList.remove("hidden"));
   closeLoginModal.addEventListener("click", () => loginModal.classList.add("hidden"));
@@ -686,6 +702,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const taskList = document.getElementById("taskList");
   const taskInput = document.getElementById("newTaskInput");
   const addTaskBtn = document.getElementById("addTaskBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("events");
+    localStorage.removeItem("tasks");
+    localStorage.removeItem("moodLog");
+    localStorage.removeItem("stickyNote");
+    localStorage.removeItem("profilePic");
+    localStorage.removeItem("sidebarName");
+    localStorage.removeItem("timeFormat");
+    localStorage.removeItem("reminderValue");
+    localStorage.removeItem("reminderUnit");
+    localStorage.removeItem("reminderSound");
+    localStorage.removeItem("locationCountry");
+    localStorage.removeItem("locationState");
+    localStorage.removeItem("locationCity");
+    localStorage.removeItem("selectedTheme");
+    localStorage.removeItem("selectedSection");
+    localStorage.removeItem("selectedCategory");
+
+    alert("Logged out successfully");
+    location.reload();
+  });
+
   let selectedTaskDate = new Date().toISOString().split("T")[0]; // Default to today
   function renderTasks() {
     const filter = document.getElementById("taskFilter").value;
