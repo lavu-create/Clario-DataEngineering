@@ -817,8 +817,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   }
-  document.getElementById("taskFilter").addEventListener("change", function() {
-    renderTasks();  // Refresh when filter changes
+
+  const taskFilterSelect = document.getElementById("taskFilter");
+  taskFilterSelect.value = localStorage.getItem("taskFilter") || "selected";
+  taskFilterSelect.addEventListener("change", function() {
+    localStorage.setItem("taskFilter", this.value);
+    renderTasks();
   });
 
   function renderMiniCalendar() {
