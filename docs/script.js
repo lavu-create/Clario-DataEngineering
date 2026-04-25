@@ -964,16 +964,31 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   // Handle mood selection
   moodPopup.querySelectorAll("button").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       const mood = btn.textContent;
-      // Update visible mood
       selectedMood.textContent = mood;
       moodPopup.classList.add("hidden");
-      // Save mood with timestamp
-      const moods = JSON.parse(localStorage.getItem("moodLog") || "[]");
       const today = new Date().toISOString().split("T")[0];
-      moods.push({ mood, date: today });
-      localStorage.setItem("moodLog", JSON.stringify(moods));
+      const newMood = { mood, date: today };
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Please login first.");
+        return;
+      }
+      const res = await fetch("https://clario-dataengineering.onrender.com/api/users/mood", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(newMood)
+      });
+      const updatedMoods = await res.json();
+      if (!res.ok) {
+        alert(updatedMoods.message || "Failed to save mood");
+        return;
+      }
+      localStorage.setItem("moodLog", JSON.stringify(updatedMoods));
       renderMoodChart();
       renderMoodEventChart();
       renderMoodTaskChart();
