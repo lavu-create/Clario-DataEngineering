@@ -17,12 +17,17 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("profilePic", data.profilePic || "");
       localStorage.setItem("sidebarName", data.sidebarName || "");
 
+      const profilePicBtn = document.getElementById("profilePicBtn");
+      const infoProfilePic = document.getElementById("infoProfilePic");
+      const sidebarNameInput = document.getElementById("sidebarNameInput");
       if (data.profilePic) {
         localStorage.setItem("profilePic", data.profilePic);
+        if (profilePicBtn) profilePicBtn.src = data.profilePic;
+        if (infoProfilePic) infoProfilePic.src = data.profilePic;
       }
-      
       if (data.sidebarName) {
         localStorage.setItem("sidebarName", data.sidebarName);
+        if (sidebarNameInput) sidebarNameInput.value = data.sidebarName;
       }
 
       if (data.settings) {
@@ -128,10 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
     renderMoodTaskChart();
   }
 
-  const existingToken = localStorage.getItem("token");
-  if (existingToken) {
-    loadUserData(existingToken);
-  }
   const loginModal = document.getElementById("loginModal");
   const openLoginBtn = document.getElementById("openLoginBtn");
   const closeLoginModal = document.getElementById("closeLoginModal");
@@ -1415,7 +1416,13 @@ document.addEventListener("DOMContentLoaded", () => {
   closeLegalModal.addEventListener("click", () => {
     legalModal.classList.add("hidden");
   });
-  
+
+  loadProfilePic();
+  const existingToken = localStorage.getItem("token");
+  if (existingToken) {
+    loadUserData(existingToken);
+  }
+
   // Render charts if functions exist
   if (typeof renderTaskChart === "function") renderTaskChart();
   if (typeof renderEventChart === "function") renderEventChart();
