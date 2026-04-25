@@ -20,6 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const profilePicBtn = document.getElementById("profilePicBtn");
       const infoProfilePic = document.getElementById("infoProfilePic");
       const sidebarNameInput = document.getElementById("sidebarNameInput");
+      const stickyNoteArea = document.getElementById("stickyNoteArea");
+
       if (data.profilePic) {
         localStorage.setItem("profilePic", data.profilePic);
         if (profilePicBtn) profilePicBtn.src = data.profilePic;
@@ -28,6 +30,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.sidebarName) {
         localStorage.setItem("sidebarName", data.sidebarName);
         if (sidebarNameInput) sidebarNameInput.value = data.sidebarName;
+      }
+      if (stickyNoteArea) {
+        stickyNoteArea.value = data.stickyNote || "";
       }
 
       if (data.settings) {
@@ -938,25 +943,40 @@ document.addEventListener("DOMContentLoaded", () => {
     stickyNoteArea.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--note-bg');
   }
   // On page load
-  stickyNoteArea.value = localStorage.getItem("stickyNote") || "";
+  if (!localStorage.getItem("token")) {
+    stickyNoteArea.value = localStorage.getItem("stickyNote") || "";
+  }
   applyStickyNoteColor();
-  // Save note content on input
-  stickyNoteArea.addEventListener("input", async () => {
+
+  let saveTimeout;
+  stickyNoteArea.addEventListener("input", () => {
     const noteValue = stickyNoteArea.value;
+    // Save instantly to localStorage
     localStorage.setItem("stickyNote", noteValue);
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    await fetch("https://clario-dataengineering.onrender.com/api/users/profile", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        stickyNote: noteValue
-      })
-    });
+    // Clear previous timer
+    clearTimeout(saveTimeout);
+    // Save to DB after 1 second pause
+    saveTimeout = setTimeout(async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        await fetch("https://clario-dataengineering.onrender.com/api/users/profile", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            stickyNote: noteValue
+          })
+        });
+        console.log("Note saved to DB");
+      } catch (err) {
+        console.error("Sticky note save failed", err);
+      }
+    }, 1000);
   });
+
   // Observe theme changes to update sticky note background color
   const observer = new MutationObserver(() => {
     applyStickyNoteColor();
@@ -1086,21 +1106,30 @@ document.addEventListener("DOMContentLoaded", () => {
   sidebarNameInput.value = localStorage.getItem("sidebarName") || "";
   sidebarNameInput.placeholder = "Your Name";
 
-  sidebarNameInput.addEventListener("input", async () => {
+  let nameTimeout;
+  sidebarNameInput.addEventListener("input", () => {
     const name = sidebarNameInput.value.trim();
-    if (!name) return;
     localStorage.setItem("sidebarName", name);
-    const token = localStorage.getItem("token");
-    await fetch("https://clario-dataengineering.onrender.com/api/users/profile", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        sidebarName: name
-      })
-    });
+    clearTimeout(nameTimeout);
+    nameTimeout = setTimeout(async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        await fetch("https://clario-dataengineering.onrender.com/api/users/profile", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            sidebarName: name
+          })
+        });
+        console.log("Name saved to DB");
+      } catch (err) {
+        console.error("Name save failed", err);
+      }
+    }, 1000);
   });
 
   // Reset All Data
