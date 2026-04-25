@@ -71,6 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     localStorage.setItem("tasks", JSON.stringify(data));
     renderTasks();
+    renderTaskChart();
+    renderMoodTaskChart();
   }
 
   async function updateTask(id, updatedTask) {
@@ -883,10 +885,25 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("ADD TASK CLICKED");
     const taskText = taskInput.value.trim();
     console.log("Task text:", taskText);
+    const taskError = document.getElementById("taskError");
     if (!taskText) {
-      console.log("Empty task");
+      taskError.textContent = "Please enter a task";
       return;
     }
+    //Get existing tasks
+    const allTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+    //Duplicate check (same name + same date)
+    const duplicateTask = allTasks.find(
+      task =>
+        task.text.toLowerCase() === taskText.toLowerCase() &&
+        task.date === selectedTaskDate
+    );
+    if (duplicateTask) {
+      taskError.textContent = `${taskText} already exists`;
+      return;
+    }
+    //Clear error if valid
+    taskError.textContent = "";
     const newTask = {
       text: taskText,
       done: false,
@@ -894,6 +911,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     console.log("Sending task:", newTask);
     await addTaskToDB(newTask);
+    //Update charts instantly
+    renderTaskChart();
+    renderMoodTaskChart();
     taskInput.value = "";
   });
   
