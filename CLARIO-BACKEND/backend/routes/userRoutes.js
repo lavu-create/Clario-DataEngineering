@@ -55,9 +55,12 @@ router.put('/events/:id', protect, async (req, res) => {
 router.delete('/events/:id', protect, async (req, res) => {
   const user = await req.user.constructor.findById(req.user._id);
 
-  user.events = user.events.filter(
-    (event) => event._id.toString() !== req.params.id
-  );
+  const event = user.events.id(req.params.id);
+  if (!event) {
+    return res.status(404).json({ message: 'Event not found' });
+  }
+
+  user.events.pull({ _id: req.params.id });
 
   await user.save();
   res.json(user.events);
