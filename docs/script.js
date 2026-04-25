@@ -17,6 +17,14 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("profilePic", data.profilePic || "");
       localStorage.setItem("sidebarName", data.sidebarName || "");
 
+      if (data.profilePic) {
+        localStorage.setItem("profilePic", data.profilePic);
+      }
+      
+      if (data.sidebarName) {
+        localStorage.setItem("sidebarName", data.sidebarName);
+      }
+
       if (data.settings) {
         localStorage.setItem("timeFormat", data.settings.timeFormat);
         localStorage.setItem("reminderValue", data.settings.reminderValue);
@@ -1013,13 +1021,28 @@ document.addEventListener("DOMContentLoaded", () => {
   changePicBtn.addEventListener("click", () => {
     uploadPicInput.click();
   });
+
   uploadPicInput.addEventListener("change", () => {
     const file = uploadPicInput.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      localStorage.setItem("profilePic", reader.result);
+    reader.onload = async () => {
+      const imageBase64 = reader.result;
+      localStorage.setItem("profilePic", imageBase64);
       loadProfilePic();
+      
+      //SAVE TO BACKEND
+      const token = localStorage.getItem("token");
+      await fetch("https://clario-dataengineering.onrender.com/api/users/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          profilePic: imageBase64
+        })
+      });
       profileModal.classList.add("hidden");
     };
     reader.readAsDataURL(file);
@@ -1031,18 +1054,24 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   const sidebarNameInput = document.getElementById("sidebarNameInput");
-  // Load saved name or fallback to "Your Name"
   sidebarNameInput.value = localStorage.getItem("sidebarName") || "";
-  // Show placeholder if input is empty
   sidebarNameInput.placeholder = "Your Name";
-  // Save name to localStorage on input
-  sidebarNameInput.addEventListener("input", () => {
+
+  sidebarNameInput.addEventListener("input", async () => {
     const name = sidebarNameInput.value.trim();
-    if (name) {
-      localStorage.setItem("sidebarName", name);
-    } else {
-      localStorage.removeItem("sidebarName");
-    }
+    if (!name) return;
+    localStorage.setItem("sidebarName", name);
+    const token = localStorage.getItem("token");
+    await fetch("https://clario-dataengineering.onrender.com/api/users/profile", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        sidebarName: name
+      })
+    });
   });
 
   // Reset All Data
