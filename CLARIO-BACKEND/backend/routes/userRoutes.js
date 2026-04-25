@@ -25,11 +25,19 @@ router.get('/events', protect, async (req, res) => {
 });
 
 router.post('/events', protect, async (req, res) => {
+  const { title, date, category } = req.body;
+  if (!title || !title.trim()) {
+    return res.status(400).json({ message: 'Title is required' });
+  }
+  if (!date) {
+    return res.status(400).json({ message: 'Date is required' });
+  }
+  if (!category) {
+    return res.status(400).json({ message: 'Category is required' });
+  }
   const user = await req.user.constructor.findById(req.user._id);
-
   user.events.push(req.body);
   await user.save();
-
   res.json(user.events);
 });
 
