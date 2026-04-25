@@ -149,18 +149,18 @@ Interactive charts to display:
 
 ```
 Clario/  
-├── CLARIO-BACKEND/        → Express APIs and server logic
-│   └── backend/           → Signup/Login, JWT handling
+├── CLARIO-BACKEND/            → Express APIs and server logic
+│   └── backend/               → Signup/Login, JWT handling
 │       ├── config/
 │       ├── controllers/
 │       ├── middleware/
 │       ├── models/
 │       ├── routes/
 │       └── utils/
-├── DATA-VIZUALIZATION/    → Mood & task analytics (Charts)
-├── docs/              → Complete UI (HTML, CSS, JS)
-│   └── assets/            → Icons, sounds, images (used in frontend)  
-└── README.md              → Project overview and documentation
+├── docs/                      → Complete UI (HTML, CSS, JS)
+│   ├── assets/                → Icons, sounds, images (used in frontend)
+│   └── DATA-VIZUALIZATION/    → Mood & task analytics (Charts)
+└── README.md                  → Project overview and documentation
 
 ```
 
