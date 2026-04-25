@@ -88,6 +88,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = await res.json();
     localStorage.setItem("tasks", JSON.stringify(data));
     renderTasks();
+    renderTaskChart();
+    renderMoodTaskChart();
   }
 
   async function deleteTask(id) {
