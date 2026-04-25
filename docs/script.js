@@ -492,14 +492,32 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Please login first.");
       return;
     }
+
+    const titleValue = eventTitle.value.trim();
+    const dateValue = eventDate.value;
+    const categoryValue = eventCategory.value;
+    if (!titleValue) {
+      alert("Please fill the title");
+      return;
+    }
+    if (!dateValue) {
+      alert("Please fill the date");
+      return;
+    }
+    if (!categoryValue) {
+      alert("Please select the category");
+      return;
+    }
+
     const newEvent = {
-      title: eventTitle.value.trim(),
+      title: titleValue,
       desc: eventDesc.value.trim(),
-      date: eventDate.value,
+      date: dateValue,
       time: eventTime.value,
-      category: eventCategory.value,
+      category: categoryValue,
       notified: false
     };
+    
     const eventId = eventIndexInput.value;
     const isEdit = !!eventId;
     try {
