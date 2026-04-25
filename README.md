@@ -1,4 +1,4 @@
-# 🌤️ Clario – Productivity Management System using MongoDB
+# 🌤️ Clario - Productivity Management System using MongoDB
 <table>
   <tr>
     <td>
