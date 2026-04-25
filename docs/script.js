@@ -496,18 +496,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const titleValue = eventTitle.value.trim();
     const dateValue = eventDate.value;
     const categoryValue = eventCategory.value;
+    const errorBox = document.getElementById("eventError");
     if (!titleValue) {
-      alert("Please fill the title");
+      errorBox.textContent = "Please fill the title";
       return;
     }
     if (!dateValue) {
-      alert("Please fill the date");
+      errorBox.textContent = "Please fill the date";
       return;
     }
     if (!categoryValue) {
-      alert("Please select the category");
+      errorBox.textContent = "Please select the category";
       return;
     }
+    // clear error if valid
+    errorBox.textContent = "";
 
     const newEvent = {
       title: titleValue,
@@ -517,7 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
       category: categoryValue,
       notified: false
     };
-    
+
     const eventId = eventIndexInput.value;
     const isEdit = !!eventId;
     try {
