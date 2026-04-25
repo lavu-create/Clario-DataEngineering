@@ -941,8 +941,21 @@ document.addEventListener("DOMContentLoaded", () => {
   stickyNoteArea.value = localStorage.getItem("stickyNote") || "";
   applyStickyNoteColor();
   // Save note content on input
-  stickyNoteArea.addEventListener("input", () => {
-    localStorage.setItem("stickyNote", stickyNoteArea.value);
+  stickyNoteArea.addEventListener("input", async () => {
+    const noteValue = stickyNoteArea.value;
+    localStorage.setItem("stickyNote", noteValue);
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    await fetch("https://clario-dataengineering.onrender.com/api/users/profile", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        stickyNote: noteValue
+      })
+    });
   });
   // Observe theme changes to update sticky note background color
   const observer = new MutationObserver(() => {
