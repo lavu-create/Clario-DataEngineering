@@ -162,21 +162,23 @@ section#historySection.hidden, section#settingsSection.hidden {
   opacity: 1;
 }
 .terms {
+  width: 100%;
   display: flex;
-  position: relative;
   justify-content: center;
   align-items: center;
   gap: 40px;
-  text-decoration-line: underline;
+  margin: 14px auto 10px auto;
+  text-align: center;
 }
 .term-btn {
   font-size: 14px;
-  margin: 14px 0px 10px 0px;
   background: transparent;
   border: none;
   color: var(--text-color);
   cursor: pointer;
   transition: var(--transition);
+  text-decoration: underline;
+  padding: 6px 10px;
 }
 .set-his {
   display: flex;
