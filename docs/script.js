@@ -1132,6 +1132,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1000);
   });
 
+  //logout
+  document.getElementById("logoutBtn").addEventListener("click", function () {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Already logged out");
+      return;
+    }
+    // clear stored data
+    localStorage.clear();
+    alert("Logged out successfully");
+    // redirect to login page
+    window.location.href = "login.html";
+  });
+
   // Reset All Data
   document.getElementById("resetBtn").addEventListener("click", () => {
     const modal = document.getElementById("deleteConfirmModal");
