@@ -744,28 +744,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.getElementById("logoutBtn");
 
   logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("events");
-    localStorage.removeItem("tasks");
-    localStorage.removeItem("moodLog");
-    localStorage.removeItem("stickyNote");
-    localStorage.removeItem("profilePic");
-    localStorage.removeItem("sidebarName");
-    localStorage.removeItem("timeFormat");
-    localStorage.removeItem("reminderValue");
-    localStorage.removeItem("reminderUnit");
-    localStorage.removeItem("reminderSound");
-    localStorage.removeItem("locationCountry");
-    localStorage.removeItem("locationState");
-    localStorage.removeItem("locationCity");
-    localStorage.removeItem("selectedTheme");
-    localStorage.removeItem("selectedSection");
-    localStorage.removeItem("selectedCategory");
-
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Already logged out");
+      return;
+    }
+    // clear stored data
+    localStorage.clear();
     alert("Logged out successfully");
-    location.reload();
+    // redirect to login page
+    window.location.href = "login.html";
   });
 
   let selectedTaskDate = new Date().toISOString().split("T")[0]; // Default to today
@@ -1130,20 +1118,6 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Name save failed", err);
       }
     }, 1000);
-  });
-
-  //logout
-  document.getElementById("logoutBtn").addEventListener("click", function () {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Already logged out");
-      return;
-    }
-    // clear stored data
-    localStorage.clear();
-    alert("Logged out successfully");
-    // redirect to login page
-    window.location.href = "login.html";
   });
 
   // Reset All Data
