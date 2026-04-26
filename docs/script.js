@@ -745,30 +745,59 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("searchInput");
   const searchResults = document.getElementById("searchResults");
 
+  //Search bar
   searchInput.addEventListener("input", function () {
-    const query = this.value.toLowerCase();
+    const query = this.value.toLowerCase().trim();
+    const resultBox = document.getElementById("searchResults");
+    resultBox.innerHTML = "";
+    if (!query) return;
     const events = JSON.parse(localStorage.getItem("events") || "[]");
-    const filtered = events.filter(event =>
-      event.title && event.title.toLowerCase().includes(query)
+    const tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+    //filter events
+    const filteredEvents = events.filter(e =>
+      (e.title && e.title.toLowerCase().includes(query)) ||
+      (e.desc && e.desc.toLowerCase().includes(query)) ||
+      (e.category && e.category.toLowerCase().includes(query)) ||
+      (e.date && e.date.includes(query))
     );
-    displaySearchResults(filtered);
+    //filter tasks
+    const filteredTasks = tasks.filter(t =>
+      (t.text && t.text.toLowerCase().includes(query)) ||
+      (t.date && t.date.includes(query))
+    );
+    showSearchResults(filteredEvents, filteredTasks);
   });
-
-  function displaySearchResults(results) {
-    searchResults.innerHTML = "";
-    if (results.length === 0) {
-      searchResults.innerHTML = "<p>No results found</p>";
+  function showSearchResults(events, tasks) {
+    const resultBox = document.getElementById("searchResults");
+    resultBox.innerHTML = "";
+    if (events.length === 0 && tasks.length === 0) {
+      resultBox.innerHTML = "<p>No results found</p>";
       return;
     }
-    results.forEach(event => {
-      const div = document.createElement("div");
-      div.className = "search-item";
-      div.innerHTML = `
-        <strong>${event.title}</strong><br>
-        📅 ${event.date}
-      `;
-      searchResults.appendChild(div);
-    });
+    // Events
+    if (events.length > 0) {
+      const eventHeader = document.createElement("h4");
+      eventHeader.textContent = "📅 Events";
+      resultBox.appendChild(eventHeader); 
+      events.forEach(e => {
+        const div = document.createElement("div");
+        div.className = "search-item";
+        div.innerHTML = `<strong>${e.title}</strong> — ${e.date}`;
+        resultBox.appendChild(div);
+      });
+    }
+    // Tasks
+    if (tasks.length > 0) {
+      const taskHeader = document.createElement("h4");
+      taskHeader.textContent = "📋 Tasks";
+      resultBox.appendChild(taskHeader);
+      tasks.forEach(t => {
+        const div = document.createElement("div");
+        div.className = "search-item";
+        div.innerHTML = `${t.text} — ${t.date}`;
+        resultBox.appendChild(div);
+      });
+    }
   }
 
   logoutBtn.addEventListener("click", () => {
@@ -1228,56 +1257,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (index === 2) showSection("settings");
     });
   });
-
-  //search bar
-  document.getElementById("searchInput").addEventListener("input", () => {
-    const query = document.getElementById("searchInput").value.toLowerCase();
-    const resultsDiv = document.getElementById("searchResults");
-    resultsDiv.innerHTML = "";
-    if (!query) return;
-    const matched = [];
-    // Search Events
-    const events = JSON.parse(localStorage.getItem("events") || "[]");
-    events.forEach((event, i) => {
-      const { title, desc, category, date } = event;
-      if (
-        title.toLowerCase().includes(query) ||
-        (desc && desc.toLowerCase().includes(query)) ||
-        category.toLowerCase().includes(query) ||
-        date.includes(query)
-      ) {
-        matched.push(`<div><strong>Event:</strong> ${title} (${date})</div>`);
-      }
-    });
-    // Search Tasks
-    const allTasks = JSON.parse(localStorage.getItem("tasks") || "{}");
-    for (const [date, tasks] of Object.entries(allTasks)) {
-      tasks.forEach((task, i) => {
-        if (task.text.toLowerCase().includes(query)) {
-          matched.push(`<div><strong>Task:</strong> ${task.text} (${date})</div>`);
-        }
-      });
-    }
-    // Search Sticky Note
-    const note = localStorage.getItem("stickyNote") || "";
-    if (note.toLowerCase().includes(query)) {
-      matched.push(`<div><strong>Sticky Note:</strong> ${note}</div>`);
-    }
-    if (matched.length > 0) {
-      resultsDiv.innerHTML = "";
-      matched.forEach(result => {
-      const div = document.createElement('div');
-      div.innerHTML = result;
-      resultsDiv.appendChild(div);
-    });
-    } else {
-      resultsDiv.innerHTML = "<em>No matches found</em>";
-    }
-  });
-  document.getElementById("searchBtn").addEventListener("click", () => {
-    searchInput.dispatchEvent(new Event('input'));
-  });
-
 
   // Weather
   const weatherBox = document.getElementById('weatherBox');
