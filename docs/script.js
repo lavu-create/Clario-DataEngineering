@@ -753,7 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.clear();
     alert("Logged out successfully");
     // redirect to login page
-    window.location.href = "login.html";
+    window.location.href = "index.html";
   });
 
   let selectedTaskDate = new Date().toISOString().split("T")[0]; // Default to today
