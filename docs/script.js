@@ -742,6 +742,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const taskInput = document.getElementById("newTaskInput");
   const addTaskBtn = document.getElementById("addTaskBtn");
   const logoutBtn = document.getElementById("logoutBtn");
+  const searchInput = document.getElementById("searchInput");
+  const searchResults = document.getElementById("searchResults");
+
+  searchInput.addEventListener("input", function () {
+    const query = this.value.toLowerCase();
+    const events = JSON.parse(localStorage.getItem("events") || "[]");
+    const filtered = events.filter(event =>
+      event.title && event.title.toLowerCase().includes(query)
+    );
+    displaySearchResults(filtered);
+  });
+
+  function displaySearchResults(results) {
+    searchResults.innerHTML = "";
+    if (results.length === 0) {
+      searchResults.innerHTML = "<p>No results found</p>";
+      return;
+    }
+    results.forEach(event => {
+      const div = document.createElement("div");
+      div.className = "search-item";
+      div.innerHTML = `
+        <strong>${event.title}</strong><br>
+        📅 ${event.date}
+      `;
+      searchResults.appendChild(div);
+    });
+  }
 
   logoutBtn.addEventListener("click", () => {
     const token = localStorage.getItem("token");
@@ -1247,7 +1275,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   document.getElementById("searchBtn").addEventListener("click", () => {
-    document.getElementById("searchInput").dispatchEvent(new Event('input'));
+    searchInput.dispatchEvent(new Event('input'));
   });
 
 

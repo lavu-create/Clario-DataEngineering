@@ -1051,8 +1051,6 @@ nav li:hover {
 
 /* ========== MODAL ========== */
 .modal {
-  position: fixed;
-  top: 0; left: 0;
   width: 100vw; height: 100vh;
   background: rgba(0,0,0,0.4);
   display: flex;
@@ -1062,6 +1060,11 @@ nav li:hover {
 }
 #deleteConfirmModal {
   z-index: 1100; /* Higher than event modal */
+}
+#legalModal{
+  position: absolute;
+  top: 30%;
+  left: 32%;
 }
 .modal-content {
   background: var(--card-bg);
