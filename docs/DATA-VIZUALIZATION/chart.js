@@ -1,5 +1,6 @@
 function renderTaskChart() {
-  const allTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+  let allTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+  if (!Array.isArray(allTasks)) allTasks = [];
 
   let completed = 0, pending = 0;
   allTasks.forEach(t => t.done ? completed++ : pending++);
@@ -45,7 +46,8 @@ function renderTaskChart() {
 
 
 function renderEventChart() {
-  const events = JSON.parse(localStorage.getItem("events") || "[]");
+  let events = JSON.parse(localStorage.getItem("events") || "[]");
+  if (!Array.isArray(events)) events = [];
   // Group events by month (YYYY-MM)
   const eventCounts = {};
   events.forEach(e => {
@@ -83,9 +85,10 @@ function renderEventChart() {
 }
 
  //Mood
-  function renderMoodChart() {
-    const ctx = document.getElementById('moodChart').getContext('2d');
-    const moodData = JSON.parse(localStorage.getItem("moodLog") || "[]");
+function renderMoodChart() {
+  const ctx = document.getElementById('moodChart').getContext('2d');
+  let moodData = JSON.parse(localStorage.getItem("moodLog") || "[]");
+    if (!Array.isArray(moodData)) moodData = [];
     const moodCount = {};
     moodData.forEach(entry => {
       moodCount[entry.mood] = (moodCount[entry.mood] || 0) + 1;
@@ -107,8 +110,10 @@ function renderEventChart() {
   }
 
 function renderMoodEventChart() {
-  const moodData = JSON.parse(localStorage.getItem("moodLog") || "[]");
-  const eventData = JSON.parse(localStorage.getItem("events") || "[]");
+  let moodData = JSON.parse(localStorage.getItem("moodLog") || "[]");
+  let eventData = JSON.parse(localStorage.getItem("events") || "[]");
+  if (!Array.isArray(moodData)) moodData = [];
+  if (!Array.isArray(eventData)) eventData = [];
 
   // Group counts by date (YYYY-MM-DD)
   const moodCounts = {};
@@ -200,8 +205,10 @@ function renderMoodEventChart() {
 
 
 function renderMoodTaskChart() {
-  const moodLog = JSON.parse(localStorage.getItem("moodLog") || "[]");
-  const tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+  let moodLog = JSON.parse(localStorage.getItem("moodLog") || "[]");
+  let tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+  if (!Array.isArray(moodLog)) moodLog = [];
+  if (!Array.isArray(tasks)) tasks = [];
 
   const moodCountByDate = {};
   const completedTasksByDate = {};

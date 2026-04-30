@@ -114,6 +114,8 @@ cd CLARIO/docs
 # python -m http.server 5500
 ```
 
+Frontend runs at: `http://127.0.0.1:5500/`
+
 ### 🔧 Backend
 ```bash
 cd CLARIO-BACKEND
